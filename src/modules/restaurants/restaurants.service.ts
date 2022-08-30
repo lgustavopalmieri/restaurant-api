@@ -14,6 +14,7 @@ export class RestaurantsService {
 
   async findAll(): Promise<Restaurant[]> {
     const restaurants = await this.restaurantModel.find();
+    console.log('testing commit signature');
     return restaurants;
   }
 
