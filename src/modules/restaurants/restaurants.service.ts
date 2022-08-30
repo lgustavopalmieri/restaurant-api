@@ -1,26 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { Restaurant } from './schemas/restaurant.schema';
 
 @Injectable()
 export class RestaurantsService {
-  create(createRestaurantDto: CreateRestaurantDto) {
-    return 'This action adds a new restaurant';
+  constructor(
+    @InjectModel(Restaurant.name)
+    private restaurantModel: mongoose.Model<Restaurant>,
+  ) {}
+
+  async findAll(): Promise<Restaurant[]> {
+    const restaurants = await this.restaurantModel.find();
+    return restaurants;
   }
 
-  findAll() {
-    return `This action returns all restaurants`;
+  async create(restaurant: CreateRestaurantDto): Promise<Restaurant> {
+    const newRestaurant = await this.restaurantModel.create(restaurant);
+    return newRestaurant;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} restaurant`;
+  async findById(id: string): Promise<Restaurant> {
+    const restaurant = await this.restaurantModel.findById(id);
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found.');
+    }
+    return restaurant;
   }
 
-  update(id: number, updateRestaurantDto: UpdateRestaurantDto) {
-    return `This action updates a #${id} restaurant`;
+  async findByIdAndUpdate(
+    id: string,
+    updateRestaurantDto: UpdateRestaurantDto,
+  ): Promise<Restaurant> {
+    return await this.restaurantModel.findByIdAndUpdate(
+      id,
+      updateRestaurantDto,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} restaurant`;
+  async findByIdAndDelete(id: string): Promise<Restaurant> {
+    return await this.restaurantModel.findByIdAndDelete(id);
   }
 }
