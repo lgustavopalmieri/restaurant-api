@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Query } from 'express-serve-static-core';
 import mongoose from 'mongoose';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
@@ -12,9 +13,25 @@ export class RestaurantsService {
     private restaurantModel: mongoose.Model<Restaurant>,
   ) {}
 
-  async findAll(): Promise<Restaurant[]> {
-    const restaurants = await this.restaurantModel.find();
-    console.log('testing commit signature');
+  async findAll(query: Query): Promise<Restaurant[]> {
+    const resPerPage = 5;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+
+    //just works with name param
+    const keyword = query.keyword
+      ? {
+          name: {
+            $regex: query.keyword,
+            $options: 'i',
+          },
+        }
+      : {};
+    const restaurants = await this.restaurantModel
+      .find({ ...keyword })
+      .limit(resPerPage)
+      .skip(skip);
+
     return restaurants;
   }
 
