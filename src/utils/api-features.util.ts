@@ -83,6 +83,7 @@ export default class APIFeatures {
         Quiet: false,
       },
     };
+    console.log('Try to implements update files.');
     return new Promise((resolve, reject) => {
       s3.deleteObjects(params, function (err, data) {
         if (err) {
