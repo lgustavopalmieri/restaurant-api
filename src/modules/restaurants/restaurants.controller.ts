@@ -7,12 +7,16 @@ import {
   Param,
   Delete,
   Query,
+  Put,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { RestaurantsService } from './restaurants.service';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { Restaurant } from './schemas/restaurant.schema';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -48,12 +52,32 @@ export class RestaurantsController {
   async findByIdAndDelete(
     @Param('id') id: string,
   ): Promise<{ deleted: boolean }> {
-    await this.restaurantsService.findById(id);
-    const restaurant = this.restaurantsService.findByIdAndDelete(id);
-    if (restaurant) {
+    const restaurantExists = await this.restaurantsService.findById(id);
+
+    const isDeleted = await this.restaurantsService.deleteImages(
+      restaurantExists.images,
+    );
+
+    if (isDeleted) {
+      this.restaurantsService.findByIdAndDelete(id);
       return {
         deleted: true,
       };
+    } else {
+      return {
+        deleted: false,
+      };
     }
+  }
+
+  @Put('upload/:id')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadFiles(
+    @Param('id') id: string,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ) {
+    await this.restaurantsService.findById(id);
+    const res = await this.restaurantsService.uploadImages(id, files);
+    return res;
   }
 }

@@ -80,4 +80,27 @@ export class RestaurantsService {
   async findByIdAndDelete(id: string): Promise<Restaurant> {
     return await this.restaurantModel.findByIdAndDelete(id);
   }
+
+  async uploadImages(id: string, files: Express.Multer.File[]) {
+    const images = await APIFeatures.upload(files);
+
+    const restaurant = await this.restaurantModel.findByIdAndUpdate(
+      id,
+      {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        images: images as Object[],
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    return restaurant;
+  }
+
+  async deleteImages(images) {
+    if (images.length === 0) return true;
+    const res = await APIFeatures.deleteImages(images);
+    return res;
+  }
 }
