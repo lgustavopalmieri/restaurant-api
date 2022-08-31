@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nodeGeocoder = require('node-geocoder');
+import { S3 } from 'aws-sdk';
 import { Location } from 'src/modules/restaurants/schemas/restaurant.schema';
 
 export default class APIFeatures {
@@ -29,5 +30,68 @@ export default class APIFeatures {
     } catch (error) {
       console.log(error.message);
     }
+  }
+
+  static async upload(files) {
+    return new Promise((resolve, reject) => {
+      const s3 = new S3({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_KEY,
+      });
+      // eslint-disable-next-line prefer-const
+      let images = [];
+
+      files.forEach(async (file) => {
+        const splitFile = file.originalname.split('.');
+        const random = Date.now();
+
+        const fileName = `${splitFile[0]}_${random}.${splitFile[1]}`;
+
+        const params = {
+          Bucket: `${process.env.AWS_S3_BUCKET_NAME}/restaurants`,
+          Key: fileName,
+          Body: file.buffer,
+        };
+
+        const uploadResponse = await s3.upload(params).promise();
+
+        images.push(uploadResponse);
+
+        if (images.length === files.length) {
+          resolve(images);
+        }
+      });
+    });
+  }
+
+  static async deleteImages(images) {
+    const s3 = new S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_KEY,
+    });
+    // eslint-disable-next-line prefer-const
+    let imagesKeys = images.map((image) => {
+      return {
+        Key: image.key,
+      };
+    });
+
+    const params = {
+      Bucket: `${process.env.AWS_S3_BUCKET_NAME}`,
+      Delete: {
+        Objects: imagesKeys,
+        Quiet: false,
+      },
+    };
+    return new Promise((resolve, reject) => {
+      s3.deleteObjects(params, function (err, data) {
+        if (err) {
+          console.log(err);
+          reject(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
   }
 }

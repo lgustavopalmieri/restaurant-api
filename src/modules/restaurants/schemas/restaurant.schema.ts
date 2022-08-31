@@ -49,7 +49,8 @@ export class Restaurant {
   category: Category;
 
   @Prop()
-  images?: object[];
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  images?: Object[];
 
   @Prop({ type: Object, ref: 'Location' })
   location?: Location;
