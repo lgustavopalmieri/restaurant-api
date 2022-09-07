@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SignUpDto } from './dto/signup.dto';
@@ -6,6 +10,7 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { User } from './schemas/user.schema';
 
 import * as bcrypt from 'bcryptjs';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +35,24 @@ export class AuthService {
         throw new ConflictException('Duplicated Email entered.');
       }
     }
+  }
+
+  async login(loginDto: LoginDto): Promise<User> {
+    const { email, password } = loginDto;
+
+    const user = await this.userModel.findOne({ email }).select('+password');
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password.');
+    }
+
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatched) {
+      throw new UnauthorizedException('Invalid email or password.');
+    }
+
+    return user;
   }
 
   findAll() {
