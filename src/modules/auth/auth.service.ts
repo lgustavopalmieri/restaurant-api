@@ -1,11 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { SignUpDto } from './dto/signup.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { User } from './schemas/user.schema';
 
 @Injectable()
 export class AuthService {
-  create(signUpDto: SignUpDto) {
-    return 'This action adds a new auth';
+  constructor(
+    @InjectModel(User.name)
+    private userModel: Model<User>,
+  ) {}
+  async siginUp(signUpDto: SignUpDto): Promise<User> {
+    const { name, email, password } = signUpDto;
+
+    const user = await this.userModel.create({
+      name,
+      email,
+      password,
+    });
+    return user;
   }
 
   findAll() {
