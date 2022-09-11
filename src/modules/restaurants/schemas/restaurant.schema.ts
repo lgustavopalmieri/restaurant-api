@@ -30,7 +30,7 @@ export interface SomePayload {
   };
 }
 
-@Schema()
+@Schema({ timestamps: true })
 export class Restaurant {
   @Prop()
   name: string;
