@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsEmail,
+  IsEmpty,
   IsEnum,
   IsNotEmpty,
   IsObject,
@@ -8,6 +9,7 @@ import {
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
+import { User } from 'src/modules/auth/schemas/user.schema';
 import { Category, SomePayload } from '../schemas/restaurant.schema';
 
 export class CreateRestaurantDto {
@@ -39,6 +41,9 @@ export class CreateRestaurantDto {
   @IsOptional()
   @IsArray()
   images?: object[];
+
+  @IsEmpty({ message: 'You cannot provide user ID:' })
+  readonly user: User;
 
   @IsObject()
   test: {
