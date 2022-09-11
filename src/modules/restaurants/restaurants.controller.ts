@@ -19,22 +19,25 @@ import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { Restaurant } from './schemas/restaurant.schema';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from '../auth/decorators/current-user.decorators';
+import { User } from '../auth/schemas/user.schema';
 
 @Controller('restaurants')
 export class RestaurantsController {
   constructor(private restaurantsService: RestaurantsService) {}
 
   @Get()
-  @UseGuards(AuthGuard())
   async getAllRestaurants(@Query() query: ExpressQuery): Promise<Restaurant[]> {
     return this.restaurantsService.findAll(query);
   }
 
   @Post()
+  @UseGuards(AuthGuard())
   async createRestaurant(
     @Body() restaurant: CreateRestaurantDto,
+    @CurrentUser() user: User,
   ): Promise<Restaurant> {
-    return this.restaurantsService.create(restaurant);
+    return this.restaurantsService.create(restaurant, user);
   }
 
   @Get(':id')
