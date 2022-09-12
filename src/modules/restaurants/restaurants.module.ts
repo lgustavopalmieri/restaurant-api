@@ -14,5 +14,6 @@ import { AuthModule } from '../auth/auth.module';
   ],
   controllers: [RestaurantsController],
   providers: [RestaurantsService],
+  exports: [MongooseModule],
 })
 export class RestaurantsModule {}
