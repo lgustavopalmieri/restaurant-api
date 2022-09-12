@@ -1,4 +1,4 @@
-name: Node ${{ matrix.node }} sample
+name: Node sample
 
 on:
   pull_request:
