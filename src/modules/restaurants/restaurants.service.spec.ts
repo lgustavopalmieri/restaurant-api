@@ -218,4 +218,25 @@ describe('RestaurantsService', () => {
       expect(result).toEqual(updatedRestaurant);
     });
   });
+
+  describe('deleteImages', () => {
+    it('should delete images from AWS s3 bucket', async () => {
+      const mockImages = [
+        {
+          ETag: '"fe7a8b7e500770edeef853c49f72aed6"',
+          Location:
+            'https://restaurant-api-lgustavopalmieri.s3.sa-east-1.amazonaws.com/restaurants/ass_1661951429168.png',
+          key: 'restaurants/ass_1661951429168.png',
+          Key: 'restaurants/ass_1661951429168.png',
+          Bucket: 'restaurant-api-lgustavopalmieri',
+        },
+      ];
+
+      jest.spyOn(APIFeatures, 'deleteImages').mockResolvedValueOnce(true);
+
+      const result = await service.deleteImages(mockImages);
+
+      expect(result).toBe(true);
+    });
+  });
 });
