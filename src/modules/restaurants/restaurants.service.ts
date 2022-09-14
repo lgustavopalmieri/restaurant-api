@@ -99,6 +99,7 @@ export class RestaurantsService {
         runValidators: true,
       },
     );
+    console.log(files);
     return restaurant;
   }
 
