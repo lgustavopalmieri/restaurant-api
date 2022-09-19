@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  restaurant-api:
+    container_name: restaurant-api
+    image: restaurant-api
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      - MODE=dev
+    networks:
+      - restaurant-api-net
+    depends_on:
+      - mongodb
+    volumes:
+      - restaurant-api:/app/node_modules
+      - .:/app
+
+  mongodb:
+    image : mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./database:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - restaurant-api-net
+    restart: always
+
+
+networks:
+  restaurant-api-net:
+    name: restaurant-api-net
+  
+volumes:
+  restaurant-api:
+    name: restaurant-api
