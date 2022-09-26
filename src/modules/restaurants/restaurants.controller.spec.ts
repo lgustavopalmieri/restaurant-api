@@ -44,7 +44,9 @@ const mockUser = {
   role: UserRoles.USER,
 };
 
-const mockRestaurantService = {};
+const mockRestaurantService = {
+  findAll: jest.fn().mockResolvedValueOnce([mockRestaurant]),
+};
 
 describe('RestaurantsController', () => {
   let controller: RestaurantsController;
@@ -66,5 +68,15 @@ describe('RestaurantsController', () => {
   });
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('getAllRestaurants', () => {
+    it('should get all restaurants', async () => {
+      const result = await controller.getAllRestaurants({
+        keyword: 'restaurant',
+      });
+      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual([mockRestaurant]);
+    });
   });
 });
