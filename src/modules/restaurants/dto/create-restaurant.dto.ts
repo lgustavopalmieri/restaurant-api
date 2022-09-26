@@ -9,8 +9,8 @@ import {
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
-import { User } from 'src/modules/auth/schemas/user.schema';
-import { Category, SomePayload } from '../schemas/restaurant.schema';
+import { User } from '../../../../src/modules/auth/schemas/user.schema';
+import { Category } from '../schemas/restaurant.schema';
 
 export class CreateRestaurantDto {
   @IsNotEmpty()

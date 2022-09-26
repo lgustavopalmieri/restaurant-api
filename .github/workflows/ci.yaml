@@ -1,4 +1,4 @@
-name: ci-nest
+name: restaurant-ci
 
 on:
   pull_request:
@@ -10,15 +10,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ 14, 16 ]
+        node: [ 16 ]
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm test
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -37,4 +52,4 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: lgustavopalmieri/ci-cd-nest:latest
+          tags: lgustavopalmieri/restaurant-api:latest
