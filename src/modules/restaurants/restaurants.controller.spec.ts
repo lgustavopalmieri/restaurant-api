@@ -46,6 +46,8 @@ const mockUser = {
 
 const mockRestaurantService = {
   findAll: jest.fn().mockResolvedValueOnce([mockRestaurant]),
+  create: jest.fn(),
+  findById: jest.fn().mockResolvedValueOnce(mockRestaurant),
 };
 
 describe('RestaurantsController', () => {
@@ -77,6 +79,39 @@ describe('RestaurantsController', () => {
       });
       expect(service.findAll).toHaveBeenCalled();
       expect(result).toEqual([mockRestaurant]);
+    });
+  });
+
+  describe('createRestaurant', () => {
+    it('should create a new restaurant', async () => {
+      const newRestaurant = {
+        name: 'Testing Meals',
+        description: 'Amazing first restaurant',
+        email: '2das2mail@mail.com',
+        phoneNo: 999783661,
+        address: 'Avenida Rudge Ramos, São Bernardo do Campo, BRAZIL',
+        category: 'Cafe',
+      };
+
+      mockRestaurantService.create = jest
+        .fn()
+        .mockResolvedValueOnce(mockRestaurant);
+
+      const result = await controller.createRestaurant(
+        newRestaurant as any,
+        mockUser as any,
+      );
+
+      expect(service.create).toHaveBeenCalled();
+      expect(result).toEqual(mockRestaurant);
+    });
+  });
+
+  describe('getRestaurantById', () => {
+    it('should get restaurant by id', async () => {
+      const result = await controller.findById(mockRestaurant._id);
+      expect(service.findById).toHaveBeenCalled();
+      expect(result).toEqual(mockRestaurant);
     });
   });
 });
