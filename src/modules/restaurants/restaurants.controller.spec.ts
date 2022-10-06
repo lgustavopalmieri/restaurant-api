@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -32,7 +33,7 @@ const mockRestaurant = {
     },
   },
   menu: [],
-  user: '631e57054437cb446886b1eb',
+  user: '631f18b3a73163f51faad89e',
   createdAt: '2022-09-12T11:32:03.383Z',
   updatedAt: '2022-09-12T11:32:03.383Z',
 };
@@ -48,6 +49,9 @@ const mockRestaurantService = {
   findAll: jest.fn().mockResolvedValueOnce([mockRestaurant]),
   create: jest.fn(),
   findById: jest.fn().mockResolvedValueOnce(mockRestaurant),
+  findByIdAndUpdate: jest.fn().mockResolvedValueOnce(mockRestaurant),
+  deleteImages: jest.fn().mockResolvedValueOnce(true),
+  findByIdAndDelete: jest.fn().mockResolvedValueOnce({ deleted: true }),
 };
 
 describe('RestaurantsController', () => {
@@ -112,6 +116,53 @@ describe('RestaurantsController', () => {
       const result = await controller.findById(mockRestaurant._id);
       expect(service.findById).toHaveBeenCalled();
       expect(result).toEqual(mockRestaurant);
+    });
+  });
+
+  describe('findByIdAndUpdate', () => {
+    it('should update an restaurant by ID', async () => {
+      const restaurant = { ...mockRestaurant, name: 'Updated name' };
+      const updateRestaurant = { name: 'Updated name' };
+
+      mockRestaurantService.findById = jest
+        .fn()
+        .mockResolvedValueOnce(mockRestaurant);
+
+      mockRestaurantService.findByIdAndUpdate = jest
+        .fn()
+        .mockResolvedValueOnce(restaurant);
+
+      const result = await controller.findByIdAndUpdate(
+        restaurant._id,
+        updateRestaurant as any,
+        mockUser as any,
+      );
+
+      expect(service.findByIdAndUpdate).toHaveBeenCalled();
+      expect(result).toEqual(restaurant);
+      expect(result.name).toEqual(restaurant.name);
+    });
+
+    it('Should throw forbidden error', async () => {
+      const restaurant = { ...mockRestaurant, name: 'Updated name' };
+      const updateRestaurant = { name: 'Updated name' };
+
+      mockRestaurantService.findById = jest
+        .fn()
+        .mockResolvedValueOnce(restaurant);
+
+      const user = {
+        ...mockUser,
+        _id: '631f18b3a73163f51faad893',
+      };
+
+      await expect(
+        controller.findByIdAndUpdate(
+          restaurant._id,
+          updateRestaurant as any,
+          user as any,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });
