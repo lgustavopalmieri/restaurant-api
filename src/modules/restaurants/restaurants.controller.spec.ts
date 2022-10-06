@@ -165,4 +165,56 @@ describe('RestaurantsController', () => {
       ).rejects.toThrow(ForbiddenException);
     });
   });
+
+  describe('deleteRestaurant', () => {
+    it('should delete restaurant by ID', async () => {
+      mockRestaurantService.findById = jest
+        .fn()
+        .mockResolvedValueOnce(mockRestaurant);
+
+      const result = await controller.findByIdAndDelete(
+        mockRestaurant._id,
+        mockUser as any,
+      );
+
+      expect(service.findByIdAndDelete).toHaveBeenCalled();
+      expect(result).toEqual({ deleted: true });
+    });
+
+    it('should not delete restaurant by ID because images are not deleted', async () => {
+      mockRestaurantService.findById = jest
+        .fn()
+        .mockResolvedValueOnce(mockRestaurant);
+
+      mockRestaurantService.deleteImages = jest
+        .fn()
+        .mockResolvedValueOnce(false);
+
+      const result = await controller.findByIdAndDelete(
+        mockRestaurant._id,
+        mockUser as any,
+      );
+
+      expect(service.findByIdAndDelete).toHaveBeenCalled();
+      expect(result).toEqual({ deleted: false });
+    });
+
+    it('Should throw forbidden error', async () => {
+      const restaurant = { ...mockRestaurant, name: 'Updated name' };
+      const updateRestaurant = { name: 'Updated name' };
+
+      mockRestaurantService.findById = jest
+        .fn()
+        .mockResolvedValueOnce(restaurant);
+
+      const user = {
+        ...mockUser,
+        _id: '631f18b3a73163f51faad893',
+      };
+
+      await expect(
+        controller.findByIdAndDelete(mockRestaurant._id, user as any),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
 });
