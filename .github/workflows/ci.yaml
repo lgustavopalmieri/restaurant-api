@@ -1,9 +1,12 @@
 name: restaurant-ci
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+
 
 jobs:
   check-application:
