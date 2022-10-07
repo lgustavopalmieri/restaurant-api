@@ -52,6 +52,7 @@ const mockRestaurantService = {
   findByIdAndUpdate: jest.fn().mockResolvedValueOnce(mockRestaurant),
   deleteImages: jest.fn().mockResolvedValueOnce(true),
   findByIdAndDelete: jest.fn().mockResolvedValueOnce({ deleted: true }),
+  uploadImages: jest.fn(),
 };
 
 describe('RestaurantsController', () => {
@@ -215,6 +216,46 @@ describe('RestaurantsController', () => {
       await expect(
         controller.findByIdAndDelete(mockRestaurant._id, user as any),
       ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('uploadFiles', () => {
+    it('should upload restaurant images', async () => {
+      const mockImages = [
+        {
+          ETag: '"fe7a8b7e500770edeef853c49f72aed6"',
+          Location:
+            'https://restaurant-api-lgustavopalmieri.s3.sa-east-1.amazonaws.com/restaurants/ass_1661951429168.png',
+          key: 'restaurants/ass_1661951429168.png',
+          Key: 'restaurants/ass_1661951429168.png',
+          Bucket: 'restaurant-api-lgustavopalmieri',
+        },
+      ];
+      const updatedRestaurant = { ...mockRestaurant, images: mockImages };
+
+      const files = [
+        {
+          fieldname: 'files',
+          originalname: 'Tutorial(9)_0.png',
+          encoding: '7bit',
+          mimetype: 'image/png',
+          buffer:
+            '<Buffer 89 50 4e 47 0d 0a 1a 0a 00 00 00 0d 49 48 44 52 00 00 05 00 00 00 03 00 08 02 00 00 00 f4 56 5d 9a 00 01 00 00 49 44 41 54 78 9c 74 bd ed 9a 1b 39 ae ... 1361388 more bytes>',
+          size: 1361438,
+        },
+      ];
+
+      mockRestaurantService.uploadImages = jest
+        .fn()
+        .mockResolvedValueOnce(updatedRestaurant);
+
+      const result = await controller.uploadFiles(
+        mockRestaurant._id,
+        files as any,
+      );
+
+      expect(service.uploadImages).toHaveBeenCalled();
+      expect(result).toEqual(updatedRestaurant);
     });
   });
 });
