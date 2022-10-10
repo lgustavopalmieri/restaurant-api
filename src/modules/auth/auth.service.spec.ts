@@ -3,9 +3,24 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 import { AuthService } from './auth.service';
-import { User } from './schemas/user.schema';
+import { User, UserRoles } from './schemas/user.schema';
+import * as bcrypt from 'bcryptjs';
+import APIFeatures from '../../utils/api-features.util';
+import { ConflictException } from '@nestjs/common';
 
-const mockAuthService = {};
+const mockUser = {
+  _id: '631f18b3a73163f51faad89e',
+  name: 'UserNone',
+  email: 'mail23@mail.com',
+  role: UserRoles.USER,
+  password: 'hashedPassword',
+};
+
+const token = 'jwtToken';
+
+const mockAuthService = {
+  create: jest.fn(),
+};
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -32,5 +47,36 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('signUp', () => {
+    const signUpDto = {
+      name: 'UserNone',
+      email: 'mail23@mail.com',
+      password: '123456',
+    };
+
+    it('should register a new user', async () => {
+      jest.spyOn(bcrypt, 'hash').mockResolvedValueOnce('testHash');
+      jest
+        .spyOn(model, 'create')
+        .mockImplementationOnce(() => Promise.resolve(mockUser));
+      jest.spyOn(APIFeatures, 'assignJwtToken').mockResolvedValueOnce(token);
+
+      const result = await service.siginUp(signUpDto);
+
+      expect(bcrypt.hash).toHaveBeenCalled();
+      expect(result.token).toEqual(token);
+    });
+
+    it('should throw duplicate email entered', async () => {
+      jest
+        .spyOn(model, 'create')
+        .mockImplementationOnce(() => Promise.reject({ code: 11000 }));
+
+      await expect(service.siginUp(signUpDto)).rejects.toThrow(
+        ConflictException,
+      );
+    });
   });
 });
