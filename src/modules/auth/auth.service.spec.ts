@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { User, UserRoles } from './schemas/user.schema';
 import * as bcrypt from 'bcryptjs';
 import APIFeatures from '../../utils/api-features.util';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
 const mockUser = {
   _id: '631f18b3a73163f51faad89e',
@@ -20,6 +20,7 @@ const token = 'jwtToken';
 
 const mockAuthService = {
   create: jest.fn(),
+  findOne: jest.fn(),
 };
 
 describe('AuthService', () => {
@@ -77,6 +78,50 @@ describe('AuthService', () => {
       await expect(service.siginUp(signUpDto)).rejects.toThrow(
         ConflictException,
       );
+    });
+  });
+
+  describe('login', () => {
+    const loginDto = {
+      email: 'mail23@mail.com',
+      password: '123456',
+    };
+    it('should login user and return the token', async () => {
+      jest.spyOn(model, 'findOne').mockImplementationOnce(
+        () =>
+          ({
+            select: jest.fn().mockResolvedValueOnce(mockUser),
+          } as any),
+      );
+      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
+
+      jest.spyOn(APIFeatures, 'assignJwtToken').mockResolvedValueOnce(token);
+
+      const result = await service.login(loginDto);
+
+      expect(result.token).toEqual(token);
+    });
+
+    it('should throw invalid email error', async () => {
+      jest.spyOn(model, 'findOne').mockImplementationOnce(
+        () =>
+          ({
+            select: jest.fn().mockResolvedValueOnce(null),
+          } as any),
+      );
+      expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw invalid password error', async () => {
+      jest.spyOn(model, 'findOne').mockImplementationOnce(
+        () =>
+          ({
+            select: jest.fn().mockResolvedValueOnce(mockUser),
+          } as any),
+      );
+      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false);
+
+      expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
     });
   });
 });
