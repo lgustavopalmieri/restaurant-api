@@ -11,7 +11,7 @@ import { User } from './schemas/user.schema';
 
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
-import APIFeatures from 'src/utils/api-features.util';
+import APIFeatures from '../../utils/api-features.util';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
