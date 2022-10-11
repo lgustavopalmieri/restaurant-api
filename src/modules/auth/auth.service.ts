@@ -11,7 +11,7 @@ import { User } from './schemas/user.schema';
 
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
-import APIFeatures from 'src/utils/api-features.util';
+import APIFeatures from '../../utils/api-features.util';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthService {
     private userModel: Model<User>,
     private jwtService: JwtService,
   ) {}
-  async siginUp(signUpDto: SignUpDto): Promise<{ token: string }> {
+  async signUp(signUpDto: SignUpDto): Promise<{ token: string }> {
     const { name, email, password } = signUpDto;
 
     const hashedPassword = await bcrypt.hash(password, 10);
