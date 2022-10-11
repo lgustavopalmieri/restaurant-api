@@ -64,7 +64,7 @@ describe('AuthService', () => {
         .mockImplementationOnce(() => Promise.resolve(mockUser));
       jest.spyOn(APIFeatures, 'assignJwtToken').mockResolvedValueOnce(token);
 
-      const result = await service.siginUp(signUpDto);
+      const result = await service.signUp(signUpDto);
 
       expect(bcrypt.hash).toHaveBeenCalled();
       expect(result.token).toEqual(token);
@@ -75,7 +75,7 @@ describe('AuthService', () => {
         .spyOn(model, 'create')
         .mockImplementationOnce(() => Promise.reject({ code: 11000 }));
 
-      await expect(service.siginUp(signUpDto)).rejects.toThrow(
+      await expect(service.signUp(signUpDto)).rejects.toThrow(
         ConflictException,
       );
     });
